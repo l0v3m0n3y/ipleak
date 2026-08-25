@@ -33,28 +33,31 @@ public class Ipleak{
         ]
 
     }
-
-    public func get_ip_info(ip: String) async throws -> Any {
-        let urlString = "\(api)/json/\(ip)"
-        guard let url = URL(string: urlString) else {
+    
+    private func fetchJSON(from urlString: String,method: HTTPMethod = .get,body: Data? = nil,queryParameters: [String: String]? = nil) async throws -> Any {
+        var urlComponents = URLComponents(string: urlString)
+        if let queryParameters = queryParameters {
+            urlComponents?.queryItems = queryParameters.map { URLQueryItem(name: $0.key, value: $0.value) }
+        }
+        guard let url = urlComponents?.url else {
             throw NSError(domain: "Invalid URL", code: -1)
         }
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        request.httpMethod = method.rawValue
         request.allHTTPHeaderFields = headers
+        if let body = body {
+            request.httpBody = body
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
         let (data, _) = try await URLSession.shared.data(for: request)
         return try JSONSerialization.jsonObject(with: data)
     }
 
-    public func get_my_ip() async throws -> Any {
-        let urlString = "\(api)/json"
-        guard let url = URL(string: urlString) else {
-            throw NSError(domain: "Invalid URL", code: -1)
-        }
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.allHTTPHeaderFields = headers
-        let (data, _) = try await URLSession.shared.data(for: request)
-        return try JSONSerialization.jsonObject(with: data)
+    public func getIpInfo(ip: String) async throws -> Any {
+        return try await fetchJSON(from: "\(api)/json/\(ip)")
+    }
+
+    public func getMyIp() async throws -> Any {
+        return try await fetchJSON(from: "\(api)/json")
     }
 }
