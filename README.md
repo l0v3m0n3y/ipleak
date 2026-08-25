@@ -7,8 +7,8 @@ import ipleak
 let client = Ipleak()
 
 do {
-    let ip_info = try await client.get_ip_info(ip: "1.1.1.1")
-    print(ip_info)
+    let ipInfo = try await client.getIpInfo(ip: "1.1.1.1")
+    print(ipInfo)
 } catch {
     print("Error: \(error)")
 }
